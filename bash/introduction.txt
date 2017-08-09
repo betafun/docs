@@ -1,0 +1,18 @@
+shell
+1.shell是什么
+ 1).壳
+ 2).interface
+ shell 是用来解决用户如何与操作系统通信的问题。
+ 
+2.shell有哪些特性
+  bash cshell zshell
+  shell的演进和分支等
+3.shell与其他编程语言的对比
+  shell 脚本语言       命令的组合
+  python 解释性语言    功能模块
+  c 编译型语言         静态库和动态库
+4.shell有哪些用途
+设备管理
+服务管理
+查看系统状态等，处理文本流等。
+

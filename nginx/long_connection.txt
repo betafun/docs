@@ -1,0 +1,39 @@
+Nginx长连接
+当使用nginx作为反向代理时，为了支持长连接，需要做到两点：
+1.从client到nginx的连接是长连接
+2.从nginx到server的连接是长连接
+从HTTP协议的角度看，nginx在这个过程中，对于客户端它扮演着HTTP服务器端的角色。
+而对于真正的服务器端（在nginx的术语中称为upstream）nginx又扮演着HTTP客户端的角色。
+
+保持和client的长连接
+为了在client和nginx之间保持上连接，有两个要求：
+1.client发送的HTTP请求要求keep alive
+2.nginx设置上支持keep alive
+
+默认情况下，nginx已经自动开启了对client连接的keep alive支持。
+一般场景可以直接使用，但是对于一些比较特殊的场景，还是有必要调整个别参数。
+
+需要修改nginx的配置文件:
+
+http {
+    keepalive_timeout  120s 120s;
+    keepalive_requests 10000;
+}
+
+其中，keepalive_requests指令用于设置一个keep-alive连接上可以服务的请求的最大数量。当最大请求数量达到时，连接被关闭。默认是100。
+
+保持与server的长连接
+需要配置的东西:
+proxy_http_version 1.1;                 
+proxy_set_header Connection "";
+
+keepalive 300;
+keepalive参数设置到upstream服务器的空闲keepalive连接的最大数量。
+keepalive 这个参数一定要小心设置，尤其对于QPS比较高的场景，推荐先做一下估算，根据QPS和平均响应时间大体能计算出需要的长连接的数量。
+比如前面10000 QPS和100毫秒响应时间就可以推算出需要的长连接数量大概是1000. 然后将keepalive设置为这个长连接数量的10%到30%。
+如果这个参数设置的不合理，将会导致nginx与后端server频繁的断开和建立连接，会使得长连接的效果被大大削弱。
+
+HTTP协议中对长连接的支持是从1.1版本之后才有的，因此最好通过proxy_http_version指令设置为"1.1"，
+而"Connection" header应该被清理。
+清理从client过来的http header，因为即使是client和nginx之间是短连接，nginx和upstream之间也是可以开启长连接的。
+这种情况下必须清理来自client请求中的"Connection" header。

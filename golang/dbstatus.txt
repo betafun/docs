@@ -1,0 +1,59 @@
+golang实现定期检查DB表中某个字段状态的逻辑
+1.对处于不同状态的任务做出不同的标识，可以用status字段的不用值实现，
+  例如：pre表示准备状态，handler表示进行中，done表示完成。
+2.现在需要把长时间处在handler状态的记录捞出来，因为这个任务可能执行超时了，可能执行这个任务的机器挂了。
+  捞出来之后分配给其他机器来执行。
+代码：
+
+func Updatebadtask() {
+   for {
+      //找出处于handler状态的记录
+     var oldChannels,newChannels,sameChannels []string
+     sameChannels = []string{}
+     tasksbefore,err := models.SelectDetailStatusIsHandler()
+     if err != nil {
+        beego.Info("Get taskbefore status of handler fail")
+     }
+     oldChannels = []string{}
+     for _, taskbefore := range tasksbefore {
+        beego.Error(taskbefore.Sid,taskbefore.ChannelId)
+        oldChannels = append(oldChannels,(taskbefore.Sid+" "+taskbefore.ChannelId))
+     }
+
+     //睡上一分钟
+     time.Sleep(60 * time.Second)
+     //一分钟之后处于handler状态的记录
+     tasksafter,err := models.SelectDetailStatusIsHandler()
+     if err != nil {
+        beego.Info("Get taskafter status of handler fail")
+     }
+     newChannels = []string{}
+     for _, taskafter := range tasksafter {
+        beego.Error(taskafter.Sid,taskafter.ChannelId)
+        newChannels = append(newChannels,(taskafter.Sid+" "+taskafter.ChannelId))
+     }
+
+    //找出这一分钟一直处于handler状态的任务，并把这个任务释放出来。
+    sameChannels = sailor.Same(oldChannels,newChannels)
+    if len(sameChannels) != 0 {
+       for _,channelId := range sameChannels {
+         beego.Info(channelId)
+         ab:=strings.Split(channelId," ")
+         if 2==len(ab) {
+            err:=models.UpdateDetailBySidchannelid(ab[0],ab[1])
+            if nil==err {
+               beego.Info("update detail table success,task will be redistribute!!!")
+            } else {
+               beego.Error("Update detail table fail",err)
+              }
+         } else {
+           beego.Error("Get sid and channelid fail,check Updatebadtask()")
+           }
+       }
+       } else {
+           beego.Info("There is no long time no run task!")
+           continue
+       }
+    }
+}
+

@@ -1,0 +1,7 @@
+golang使用time包计算程序运行的时间
+t1:=time.Now()
+func main(){
+}
+t2:=time.Now()
+td:=t2.Sub(t1)
+fmt.Println(td)

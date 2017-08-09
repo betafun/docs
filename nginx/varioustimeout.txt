@@ -1,0 +1,34 @@
+client_header_timeout 10s;
+client_body_timeout 10s;
+这两个参数是对请求头和请求体的超时时间，就是从三次握手到第一次读取请求头和请求体失败的时间。
+比如当前服务器负载大、网络卡，恰好在第一次读取请求头或请求提时没有得到且时间超过10s了，
+nginx就会超时报错，对于我当前应用而言，60s显而是太长了，优化到10s。
+
+proxy_connect_timeout 10s;#是和后端建立连接的超时时间，记住不要超过 75s。
+proxy_read_timeout 55s;#是从后端读取数据的超时时间，两次读取操作的时间间隔如果大于这个值，和后端的连接会被关闭。
+proxy_send_timeout 50s;#是向后端写数据的超时时间，两次写操作的时间间隔大于这个值，
+                    也就是过了这么长时间后端还是没有收到数据(可能是根据 TCP ACK 判断)，连接会被关闭。
+
+keepalive_timeout  65s;默认值是75s
+http是无状态的协议，当服务结束后，就面临着是否断开tcp连接的问题.
+当客户端或者服务器端需要时，可以在建链的时候采用长连接方式，即服务结束后在一段时间内不断开连接，
+当再有请求过来时省掉了建链的资源消耗，超时后nginx会主动断开连接。
+当然配置里还有另外一个参数 keepalive_requests 600;
+这个参数是说即使长连接没到过期时间，但服务的http总数量超过指定值后也是要断开连接，我目前设置的是600。
+
+keepalive_timeout  65 70;
+这是前端keepalive_timeout的一个延伸配置，前面65是告诉客户端我给你保持多久，后面一个是多久我就给断开连接了。
+
+proxy_upstream_fail_timeout（fail_timeout）
+语法 server address [fail_timeout=30s]
+默认值 10s
+上下文 upstream
+说明 Upstream模块下 server指令的参数，设置了某一个upstream后端失败了指定次数（max_fails）后，该后端不可操作的时间，默认为10秒
+负载均衡配置时的2个参数：fail_timeout和max_fails
+这2个参数一起配合，来控制nginx怎样认为upstream中的某个server是失效的当在fail_timeout的时间内，某个server连接失败了max_fails次，则nginx会认为该server不工作了。同时，在接下来的 fail_timeout时间内，nginx不再将请求分发给失效的server。
+
+注意：
+keepalive_timeout 设置的是nginx与客户端之间保持长连接的时间。
+proxy_read_timeout 设置的是nginx与后端服务器两次连接之间超时的时间。
+fail_timeout 设置的也是和后端服务器之间的超时时间。
+

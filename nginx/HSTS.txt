@@ -1,0 +1,26 @@
+HSTS(http strict transport security)HTTP严格传输安全
+它允许一个HTTP网站要求浏览器总是通过HTTPS来访问，这使得攻击者在用户与服务器通讯过程中拦截
+、篡改信息以及冒充身份变得更为困难。
+
+如何配置？
+只要在 Nginx 配置文件加上以下头信息就可以了：
+
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;preload" always;
+ max-age：设置单位时间内強制使用 HTTPS 连接
+ includeSubDomains：可选，所有子域同时生效
+ preload：可选，非规范值，用于定义使用『HSTS 预加载列表』
+ always：可选，保证所有响应都发送此响应头，包括各种內置错误响应
+当用户进行 HTTPS 连接的时候，服务器会发送一个 Strict-Transport-Security 响应头：
+浏览器在获取该响应头后，在 max-age 的时间内，如果遇到 HTTP 连接，就会通过 307 跳转強制使用 HTTPS 进行连接，
+并忽略其它的跳转设置（如 301 重定向跳转）。
+这个307是浏览器内部跳转，即浏览器将http请求转换为https请求
+
+http强制跳转https
+ rewrite ^/(.*) https://$host/$1 redirect; #302跳转。
+
+ 这个是浏览器发起http请求到服务器，然后服务器告诉浏览器重定向的地址，服务器重新发起https的请求
+ 这个过程中存在与服务器的http连接，存在被劫持的风险。
+ 
+两者之间的区别？
+HSTS：浏览器内部重定向
+rewrite：服务器将请求重定向 （存在http请求被劫持的风险） 

@@ -1,0 +1,4 @@
+用一个表中的字段值来更新另一个表
+例如：
+用t_table_2表中字段name的值来更新t_table_1表中value字段的值（domain作为连接条件）。
+update t_table_1 a, t_table_2 b set a.value=b.name where a.domain=b.domain

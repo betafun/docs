@@ -1,0 +1,16 @@
+sudo -l
+sudo /usr/sbin/tcpdump -s0 -w xxoo.pcap -ieth1 host xx.xx.xx.xx
+抓取指定IP xx.xx.xx.xx到本机eth1的完整包，并保存在本地名为xxoo.pcap的文件。
+
+
+tcp建立连接和断开连接
+建立连接
+syn
+        syn ack
+ack
+断开连接
+fin
+        ack
+        fin
+ack
+

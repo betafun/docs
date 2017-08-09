@@ -1,2 +1,2 @@
 # docs
-SRE Hub Tech Docs.
+Tech docs

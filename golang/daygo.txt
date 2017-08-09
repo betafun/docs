@@ -1,0 +1,23 @@
+go语言使用中常用到的一些技巧
+
+import("time")
+各种各样的时间
+time.Now().AddDate(0,0,-1).Format("20060102") 输出昨天的日期。
+AddDate(年,月,日)与当前时间的差值。
+这个格式化的日期必须是"2006-01-02 15:04:05"，不能是其他。
+
+DB连接和插入数据
+import(""database/sql"
+_ "github.com/go-sql-driver/mysql"
+")
+
+连接DB
+db, err := sql.Open("mysql", "用户名:密码@tcp(IP:PORT)/db")
+执行插入操作
+ _,err = db.Exec("INSERT INTO t_table values(?,?,?)",arg0,arg1,arg2)
+
+解析json数据
+1.获取json数据格式，http://json2struct.mervine.net/
+2.解析json数据,body_str是待解析的数据
+  var r MyJsonName
+  err = json.Unmarshal([]byte(body_str), &r)

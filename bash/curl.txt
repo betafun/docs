@@ -1,0 +1,2 @@
+使用curl实现一个post请求
+curl -H "头部信息" -d "post的数据" http://www.baidu.com/post_request
