@@ -1,0 +1,65 @@
+ golang关于interface你要知道的一些事情
+	到目前为止遇到interface一直都是懵逼的状态，所以有必要总结一下interface在golang中的应用。
+interface就是一组抽象方法的集合，它必须由其他非interface类型实现，而不能自我实现,interface是Go语言中最成功的设计之一，
+空的interface可以被当作“鸭子”类型使用。空interface(interface{})不包含任何的method，正因为如此，所有的类型都实现了空interface。
+空interface对于描述起不到任何的作用(因为它不包含任何的method），但是空interface在我们需要存储任意类型的数值的时候相当有用，
+因为它可以存储任意类型的数值。它有点类似于C语言的void*类型。
+	一个函数把interface{}作为参数，那么他可以接受任意类型的值作为参数，如果一个函数返回interface{},那么也就可以返回任意类型的值。
+是不是很有用啊！
+
+它使得Go这样的静态语言拥有了一定的动态性，但却又不损失静态语言在类型安全方面拥有的编译时检查的优势。
+
+Eface和Iface
+
+interface实际上就是一个结构体，包含两个成员。其中一个成员是指向具体数据的指针，另一个成员中包含了类型信息。
+空接口和带方法的接口略有不同，下面分别是空接口和带方法的接口是使用的数据结构：
+struct Eface
+{
+    Type*    type;
+    void*    data;
+};
+struct Iface
+{
+    Itab*    tab;
+    void*    data;
+};
+先看Eface，它是interface{}底层使用的数据结构。数据域中包含了一个void*指针，和一个类型结构体的指针。
+interface{}扮演的角色跟C语言中的void*是差不多的，Go中的任何对象都可以表示为interface{}。
+不同之处在于，interface{}中有类型信息，于是可以实现反射。
+类型信息的结构体定义如下：
+struct Type
+{
+    uintptr size;
+    uint32 hash;
+    uint8 _unused;
+    uint8 align;
+    uint8 fieldAlign;
+    uint8 kind;
+    Alg *alg;
+    void *gc;
+    String *string;
+    UncommonType *x;
+    Type *ptrto;
+};
+其实在前面我们已经见过它了。精确的垃圾回收中，就是依赖Type结构体中的gc域的。
+不同类型数据的类型信息结构体并不完全一致，Type是类型信息结构体中公共的部分，
+其中size描述类型的大小，hash数据的hash值，align是对齐，fieldAlgin是这个数据嵌入结构体时的对齐，kind是一个枚举值，每种类型对应了一个编号。alg是一个函数指针的数组，存储了hash/equal/print/copy四个函数操作。UncommonType是指向一个函数指针的数组，收集了这个类型的实现的所有方法。
+在reflect包中有个KindOf函数，返回一个interface{}的Type，其实该函数就是简单的取Eface中的Type域。
+Iface和Eface略有不同，它是带方法的interface底层使用的数据结构。data域同样是指向原始数据的，而Itab的结构如下：
+struct    Itab
+{
+    InterfaceType*    inter;
+    Type*    type;
+    Itab*    link;
+    int32    bad;
+    int32    unused;
+    void    (*fun[])(void);
+};
+Itab中不仅存储了Type信息，而且还多了一个方法表fun[]。一个Iface中的具体类型中实现的方法会被拷贝到Itab的fun数组中。
+
+具体类型向接口类型赋值
+类型转换时的检测就是比较具体类型的方法表和接口类型的方法表，看具体类型是实现了接口类型所声明的所有的方法。
+
+reflect
+
+reflect就是给定一个接口类型的数据，得到它的具体类型的类型信息，它的Value等。reflect包中的TypeOf和ValueOf函数分别做这个事情。
