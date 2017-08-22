@@ -1,0 +1,14 @@
+golang使用map，去除数组中重复的值
+例如:
+s:=[]string{"haha","hehe","haha","heha","haha","hehe"}
+func deldupdata(s []string) []string {
+     var result []string
+	 flag:=make(map[string]bool)
+	 for _,val:=range s {
+	     if !flag[val] {
+		    flag[val]=true
+			result=append(result,val)
+		 }
+	 }
+	 return result
+}
