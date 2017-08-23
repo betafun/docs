@@ -98,4 +98,6 @@ func InsertIntoDB(r MyJsonName) {
     defer db.Close()
 }
 
+从DB中读取相应的数据，并保存到slice中
+
                                                              
