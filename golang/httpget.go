@@ -70,6 +70,7 @@ func Httpget(url_addr string) MyJsonName {
     if err != nil {
       log.Println( err )
     }
+    //解析json数据
     err = json.Unmarshal([]byte(string(body)), &r)
     if "true" == r.Result {
         break
