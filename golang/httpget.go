@@ -1,5 +1,8 @@
 访问一个API并把返回的结果存到DB中。
 首先需要获取到API返回数据的结构，可以用在线的转换工具：http://json2struct.mervine.net/
+什么情况下使用http.client，什么情况下使用transport
+For control over HTTP client headers, redirect policy, and other settings, create a Client:
+For control over proxies, TLS configuration, keep-alives, compression, and other settings, create a Transport:
 import(
 "encoding/json"
 "net/http"
