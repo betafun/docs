@@ -102,5 +102,31 @@ func InsertIntoDB(r MyJsonName) {
 }
 
 从DB中读取相应的数据，并保存到slice中
+func SelectfromDB() []string {
+    var result []string
+    db, err := sql.Open("mysql", "用户:密码@tcp(IP:Port)/DB")
+    if err != nil {
+        log.Println(err)
+    }   
 
-                                                             
+    rows,err:=db.Query("select distinct(name) from t_coin_info where source='bter'")
+    if err != nil {
+        log.Println(err)
+    }   
+    defer rows.Close()
+    for rows.Next() {
+        var name string
+        if err := rows.Scan(&name); err != nil {
+                log.Println(err)
+        }   
+        result=append(result,strings.ToLower(name))
+    }   
+    if err := rows.Err(); err != nil {
+       log.Println(err)
+    }   
+    return result
+}
+
+
+
+                                                            
