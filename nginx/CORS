@@ -1,0 +1,25 @@
+浏览器的跨域访问
+跨域资源共享标准新增了一组 HTTP 首部字段，允许服务器声明哪些源站有权限访问哪些资源。
+另外，规范要求，对那些可能对服务器数据产生副作用的 HTTP 请求方法（特别是 GET 以外的 HTTP 请求，或者搭配某些 MIME 类型的 POST 请求），
+浏览器必须首先使用 OPTIONS 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨域请求。
+服务器确认允许之后，才发起实际的 HTTP 请求。
+在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。
+
+跨域资源共享(CORS)机制允许 Web 应用服务器进行跨域访问控制，从而使跨域数据传输得以安全进行。
+浏览器支持在 API 容器中（例如 XMLHttpRequest 或 Fetch ）使用 CORS，以降低跨域 HTTP 请求所带来的风险。
+比如说，假如站点 http://foo.example 的网页应用想要访问 http://bar.other 的资源。
+请求头中会带有Origin: http://foo.example字段来标识请求的来源。
+而响应头中的Access-Control-Allow-Origin: *，字段表示允许资源可以被任何外域访问。
+
+不要混淆：该头字段是限制其他域名的网页发起对该域名资源的请求。而不是服务器对本身域名的限制。
+
+而nginx也可以实现防止点击劫持的功能。
+X-Frame-Options，是为了减少点击劫持（Clickjacking）而引入的一个响应头。Chrome4+、Firefox3.6.9+、IE8+均支持，使用方式如下：
+x-frame-options: SAMEORIGIN
+这个响应头支持三种配置：
+DENY：不允许被任何页面嵌入；
+SAMEORIGIN：不允许被本域以外的页面嵌入；
+ALLOW-FROM uri：不允许被指定的域名以外的页面嵌入（Chrome现阶段不支持）；
+
+只需要在nginx配置中http，server或者location域中如下配置即可：
+add_header X-Frame-Options SAMEORIGIN;
