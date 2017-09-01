@@ -1,0 +1,38 @@
+搭建vim-go
+
+Vim-go是当前使用最为广泛的用于搭建Golang开发环境的vim插件，这里我同样使用vim-go作为核心和基础进行环境搭建的。
+vim-go利 用开源Vim插件管理器安装，gmarik/Vundle.vim是目前被推荐次数更多的Vim插件管理器，超过了pathogen。
+这里我们 就用vundle来作为Vim的插件管理工具。
+
+1、安装Vundle.vim
+
+Vundle.vim的安装步骤如下：
+
+mkdir ~/.vim/bundle
+git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim                                                                      
+
+创建~/.vimrc文件(如果你没有这个文件的话)，在文件顶部添加有关Vundle.vim的配置：
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle, required
+Plugin 'gmarik/Vundle.vim'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+
+此时Vim仅安装了Vundle.vim这一个插件。编辑hellogolang.go时与编辑普通文本文件无异，一切都还是Vim的默认属性。
+
+2、安装Vim-go
+
+编辑~/.vimrc，在vundle#begin和vundle#end间增加一行：
+
+Plugin 'fatih/vim-go'
+
+在Vim内执行 :PluginInstall
