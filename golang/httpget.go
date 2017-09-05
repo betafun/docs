@@ -121,6 +121,7 @@ func SelectfromDB() []string {
         }   
         result=append(result,strings.ToLower(name))
     }   
+    //返回rows在迭代过程中返回的错误
     if err := rows.Err(); err != nil {
        log.Println(err)
     }   
