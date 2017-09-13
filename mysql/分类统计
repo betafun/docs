@@ -1,0 +1,34 @@
+mysql中的case when语句
+CASE WHEN语句的功能很强大，可以定义灵活的查询条件，很适合进行分类统计。
+语法：
+ CASE   <单值表达式>
+        WHEN <表达式值> THEN <SQL语句或者返回值>
+        WHEN <表达式值> THEN <SQL语句或者返回值>
+        ...
+        WHEN <表达式值> THEN <SQL语句或者返回值>
+        ELSE <SQL语句或者返回值>
+ END
+举例子：
+1.简单Case函数写法(注意sex的位置)
+select *,(CASE sex WHEN '1' THEN '男' WHEN '0' THEN '女' ELSE '保密' END) as sex_text from user
+2.Case搜索函数写法(注意sex的位置【推荐】)
+select *,(CASE WHEN sex='1' THEN '男' WHEN sex='0' THEN '女' ELSE '保密' END) as sex_text from user
+
+总结：简单Case函数写法只适合相等条件判断，不能用于大于、小于及不等于的判断，
+      Case搜索函数写法适合复杂条件判断：可用于大于、小于及不等于的判断。
+	  
+最好说一个实际中用到的例子：
+在日常工作中总是需要配一些报表，来表示达标率啊，成功率什么的。
+需要的结果很简单，只需要用达标的数目除以总数不就可以了，那么如何用一条sql来实现呢。
+不知道case when之前，我还是很头疼的，现在觉得很简单很合理。
+举个荔枝：
+select   
+count(case when datediff(substring_index(b.create_time," ",1),substring_index(a.create_time," ",1))<=1 THEN 1 ELSE NULL END)/count(*) as rate,
+substring_index(a.create_time,"-",2) as mon
+from      
+t_xx_ss a     
+left join  t_xx_ww b     
+on a.domain=b.domain      
+group by substring_index(a.create_time,"-",2);
+上面的sql就实现了连接，分组和分类统计的功能。
+总结：sql的功能还是很强大的，只要你遇到的情况基本都会有解。
