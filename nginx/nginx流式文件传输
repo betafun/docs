@@ -1,0 +1,12 @@
+Syntax:	proxy_request_buffering on | off;
+Default:	
+proxy_request_buffering on;
+Context:	http, server, location
+This directive appeared in version 1.7.11.
+Enables or disables buffering of a client request body.
+
+When buffering is enabled, the entire request body is read from the client before sending the request to a proxied server.
+
+When buffering is disabled, the request body is sent to the proxied server immediately as it is received. In this case, the request cannot be passed to the next server if nginx already started sending the request body.
+
+When HTTP/1.1 chunked transfer encoding is used to send the original request body, the request body will be buffered regardless of the directive value unless HTTP/1.1 is enabled for proxying.
