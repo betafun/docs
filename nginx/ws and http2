@@ -1,0 +1,23 @@
+nginx作为代理服务器支持http2协议
+首先升级nginx到1.9.5版本以上，同时对openssl库的版本也有要求，最后在编译nginx时记得加上http2模块就可以了。
+那么客户端到nginx之间是使用的http2协议，nginx和后端服务器之间呢？其实是使用的http协议，并不是http2。
+Q: Will you support HTTP/2 on the upstream side as well, or only support HTTP/2 on the client side?
+
+A: At the moment, we only support HTTP/2 on the client side. You can’t configure HTTP/2 with proxy_pass. 
+
+But what is the point of HTTP/2 on the backend side? Because as you can see from the benchmarks, 
+there’s not much benefit in HTTP/2 for low‑latency networks such as upstream connections.
+Also, in NGINX you have the keepalive module, and you can configure a keepalive cache. 
+The main performance benefit of HTTP/2 is to eliminate additional handshakes, 
+but if you do that already with a keepalive cache, you don’t need HTTP/2 on the upstream side.
+
+那么nginx作为代理服务器支持websocket协议是怎么样的呢？
+首先nginx支持websocket的配置如下：
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+所以nginx支持websocket是通过添加两个请求头信息，用来进行协议的升级。
+WebSocket 是独立的、创建在 TCP 上的协议。
+Websocket 通过 HTTP/1.1 协议的101状态码进行握手。
+为了创建Websocket连接，需要通过浏览器发出请求，之后服务器进行回应，
+这个过程通常称为“握手”（handshaking），握手之后双方使用ws进行通信。
+正式建立连接之后客户端和服务端则是通过websocket协议进行通信的，没有http半毛关系了。
