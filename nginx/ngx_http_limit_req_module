@@ -38,3 +38,9 @@ Syntax:	limit_req_log_level info | notice | warn | error;
 Default:	
 limit_req_log_level error;
 Context:	http, server, location
+
+
+写到最后:
+limit_req_zone
+limit_req
+一起使用才有效，且limit_req_zone只能配置在http区域。
