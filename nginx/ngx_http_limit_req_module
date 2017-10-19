@@ -1,0 +1,40 @@
+使用nginx如何实现访问控制？
+模块：ngx_http_limit_req_module
+ngx_http_limit_req_module模块用于限制每个定义的密钥的请求处理速率，
+特别是来自单个IP地址的请求的处理速率，使用“泄漏桶”方法进行限制。
+指令：
+句法:	limit_req_zone key zone=name:size rate=rate;
+默认值:	—
+配置区域:	http
+说明：
+设置共享内存区域的参数，以保持各种密钥的状态。
+特别地，状态存储当前的过多请求数。密钥可以包含文本，变量及其组合。没有计算具有空键值的请求。
+例如：
+limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+注释：$binary_remote_addr客户端IP地址作为key值，状态保存在名为one大小为10m的空间中。请求的速率限制在每秒一次请求
+
+句法:	limit_req zone=name [burst=number] [nodelay];
+默认值:	—
+配置区域:http, server, location
+说明：
+设置使用的共享内存区域和请求的最大突发数目。如果请求速率超过了这个区域设定的值，它们的处理将会被延迟，从而请求能够按照定义的速率
+被处理。超出的请求会被延迟，直到超过了最大突发数目，请求会被终止并返回一个错误。
+例如：
+limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+
+server {
+    location /search/ {
+        limit_req zone=one burst=5;
+    }
+	
+句法: limit_req_status code;
+默认值:	limit_req_status 503;
+配置区域:	http, server, location
+说明：
+设置拒绝请求时的返回码
+
+设置日志等级：
+Syntax:	limit_req_log_level info | notice | warn | error;
+Default:	
+limit_req_log_level error;
+Context:	http, server, location
