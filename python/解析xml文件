@@ -17,13 +17,14 @@ try:
 except ImportError:
         import xml.etree.ElementTree as ET
 file_name = "/usr/local/app/dongfeng/pythonscript/gslbdomain.xml"
+获取分组包含的域名并写入文件
 def get_url_content(domain):
    url = "http://xx.qq.com/cgi-bin/gslb/toolsvr/GetCNameRarentDomainList?domain="+domain
    response = requests.get(url).content
    f = open(file_name,"w+")
    f.write(response)
    f.close()
-
+修改文件的编码，并解析文件内容
 def modify_xml_encoding():
     domain_list = ['']
     file_xml = open(file_name,'r').read()
@@ -36,7 +37,7 @@ def modify_xml_encoding():
            #print child.text.replace('\n','').strip('\n')
            #break
     return domain_list
-
+写入DB
 def insert_into_db(cname):
     config = { 
               'host': '',
