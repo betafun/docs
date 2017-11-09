@@ -1,0 +1,74 @@
+获取sparta每个分组的域名调用量情况
+需要的信息：
+1.每个域名的请求量情况
+2.域名对应的分组信息
+第一个信息已经有了，所以只需要获取第二个信息就可以了。
+用python获取域名的分组信息
+通过接口获取，返回的内容是xml格式的，需要先修改文件的编码格式然后解析文件。
+解析文件时又涉及到字符串中字符的替换和末尾字符的删除等。
+代码如下：
+
+# _*_ coding:utf-8 _*_
+
+import requests
+import MySQLdb
+try:
+        import xml.etree.cElementTree as ET
+except ImportError:
+        import xml.etree.ElementTree as ET
+file_name = "/usr/local/app/dongfeng/pythonscript/gslbdomain.xml"
+def get_url_content(domain):
+   url = "http://xx.qq.com/cgi-bin/gslb/toolsvr/GetCNameRarentDomainList?domain="+domain
+   response = requests.get(url).content
+   f = open(file_name,"w+")
+   f.write(response)
+   f.close()
+
+def modify_xml_encoding():
+    domain_list = ['']
+    file_xml = open(file_name,'r').read()
+    file_xml = file_xml.replace('<?xml version="1.0" encoding="gb2312" ?>', '<?xml version="1.0" encoding="utf-8" ?>') 
+    file_xml = unicode(file_xml,encoding='gb2312').encode('utf-8')
+    root = ET.fromstring(file_xml)
+    for child in root:
+        if child.tag == "sumary":
+           domain_list.append(child.text.replace('\n','').strip(' '))
+           #print child.text.replace('\n','').strip('\n')
+           #break
+    return domain_list
+
+def insert_into_db(cname):
+    config = { 
+              'host': '',
+              'port': ,
+              'user': '',
+              'passwd': '',
+              'db': '',
+              'charset': 'utf8'
+            }   
+    db = MySQLdb.connect(**config)
+    cur = db.cursor()
+    try:
+       cur.execute("delete from t_sparta_domain_group where f_cname=%s" % cname)
+       db.commit()
+    except:
+       db.rollback()
+    for dm in modify_xml_encoding():
+        if dm != '':
+           sql = "insert into t_sparta_domain_group(f_domain,f_cname) VALUES ('%s', '%s')" % (dm.strip('.'),cname)
+           try:
+              cur.execute(sql)
+              db.commit()
+           except:
+              db.rollback()
+              
+    db.close()
+   
+if __name__ == '__main__':
+  cname_list = ["ee",\
+                "ww",\
+                "bb",\
+                "qq"]
+  for cd in cname_list:
+      get_url_content(cd)
+      insert_into_db(cd)
