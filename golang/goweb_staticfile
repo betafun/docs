@@ -1,0 +1,4 @@
+go搭建web服务器，实现简单的静态文件访问。
+fsh := http.FileServer(http.Dir("/usr/local/app/dongfeng/"))//设置访问文件的路径。
+http.Handle("/static/", http.StripPrefix("/static/", fsh))//设置路由和文件路径的对应关系。
+err := http.ListenAndServe(":9090", nil) //设置监听的端口。
