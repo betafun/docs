@@ -1,0 +1,43 @@
+安装各种版本的nginx 
+首先下载压缩包：
+wget http://nginx.org/download/nginx-1.13.7.tar.gz
+解压：tar -zxvf nginx-1.13.7.tar.gz
+编译：
+./configure --with-http_ssl_module \
+            --with-http_v2_module  \
+            --with-http_stub_status_module \
+            --with-openssl=/usr/local/app/openssl-1.1.0b \
+            --with-pcre=/usr/local/app/pcre-8.39 \
+安装：
+make 
+make install
+
+然后如何以普通用户启动和停止nginx，这里就不介绍了。
+
+使用流量拷贝功能：ngx_http_mirror_module
+配置指令：
+配置:	mirror uri | off;
+默认：	mirror off;
+配置区域:	http, server, location
+用来设置原始请求将会被拷贝到那个路径，可以设置多条路径。
+
+配置:	mirror_request_body on | off;
+默认值:	mirror_request_body on;
+配置区域:	http, server, location
+用来设置客户端的请求体是否被拷贝。启用后，客户端请求主体将在创建镜像子请求之前被读取。
+在这种情况下设置不缓存的指令就失效了。
+
+例子：
+location / {
+    mirror /mirror;
+    mirror_request_body off;
+    proxy_pass http://backend;
+}
+
+location /mirror {
+    internal; //设置该目录只能被内部的请求调用。
+    proxy_pass http://log_backend;
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    proxy_set_header X-Original-URI $request_uri;
+}
