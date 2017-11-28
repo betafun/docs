@@ -1,0 +1,18 @@
+select case
+golang的 select 的功能和 select, poll, epoll 相似， 就是监听 IO 操作，当 IO 操作发生时，触发相应的动作。
+
+注意到 select 的代码形式和 switch 非常相似， 不过 select 的 case 里的操作语句只能是【IO 操作】 。
+
+select只能应用于channel的操作，既可以用于channel的数据接收，也可以用于channel的数据发送。
+如果select的多个分支都满足条件，则会随机的选取其中一个满足条件的分支。
+｀case｀语句的表达式可以为一个变量或者两个变量赋值。
+
+flag包
+命令行解析专用。
+通过flag.String(), Bool(), Int() 等flag.Xxx()方法，该种方式返回一个相应的指针。
+confPath := flag.String("config", "", "init config path")
+第一个参数：设置对应的标签名，可以通过该标签名来获取对应值
+第二个参数：如果没有设置该标签，则采用这个值即该值为默认值
+第三个参数：这个参数为帮助信息，一般用于help调用展示
+flag.Parse()
+调用flag.Parse()解析命令行参数到定义的flag
