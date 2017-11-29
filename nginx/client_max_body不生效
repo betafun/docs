@@ -1,0 +1,24 @@
+nginx client_max_body_size配置不生效
+http{
+client_max_body_size 8m;
+error_page 400 /400.html;
+error_page 403 /403.html;
+error_page 404 /404.html;
+error_page 500 /500.html;
+error_page 501 /501.html;
+error_page 502 /502.html;
+error_page 503 /503.html;
+error_page 504 /504.html;
+server{
+
+ location{
+  client_max_body_size 200m;
+ }
+}
+}
+
+其实在location内的配置200M是生效的，但是因为服务返回501请求被内部转到了error_page页面，error_page页面是使用http层的配置的，
+配置的默认上传文件的包体大小是8M。所以就直接返回413了。
+综上：自定义错误页面有点坑。
+nginx 一个比较麻烦的问题，就是内部的 error_page 的处理。
+要记住的一点就是，在不特殊配置的情况下，error_page 也会继承 http 层的各种配置。也就是说，会有很多蛋疼的情况出现。
