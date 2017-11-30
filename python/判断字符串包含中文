@@ -1,0 +1,23 @@
+package main
+
+import (
+        "fmt"
+        "regexp"
+        "unicode"
+)
+
+func main() {
+        str := "电信/联通"
+        var hzRegexp = regexp.MustCompile("^[\u4e00-\u9fa5]{3,8}$")
+        fmt.Println(hzRegexp.MatchString(str))
+        fmt.Println(IsChineseChar(str))
+}
+
+func IsChineseChar(str string) bool {
+        for _, r := range str {
+                if unicode.Is(unicode.Scripts["Han"], r) {
+                        return true
+                }
+        }
+        return false
+}
