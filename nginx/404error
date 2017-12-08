@@ -1,0 +1,32 @@
+nginx配置404错误自定义页面
+默认情况下，nginx不支持自定义404错误页面，只有proxy_intercept_errors指令被设置为on，nginx才支持将404错误重定向。
+
+Syntax:	proxy_intercept_errors on | off;
+Default:	
+proxy_intercept_errors off;
+Context:http, server, location
+Determines whether proxied responses with codes greater than or equal to 300 should be passed to a client or be intercepted 
+and redirected to nginx for processing with the error_page directive.
+
+Syntax:	error_page code ... [=[response]] uri;
+Default:	—
+Context:http, server, location, if in location
+例子：
+1.
+error_page 404             /404.html;
+error_page 500 502 503 504 /50x.html;
+2.
+error_page 404 =200 /empty.gif;
+3.
+error_page 404 = /404.php;
+4.
+location / {
+    error_page 404 = @fallback;
+}
+
+location @fallback {
+    proxy_pass http://backend;
+}
+5.
+error_page 403      http://example.com/forbidden.html;
+error_page 404 =301 http://example.com/notfound.html;
