@@ -1,0 +1,40 @@
+redirect内部重定向和外部重定向
+这里简单总结一下:
+
+如果 某一条 rewrite 规则命中直接转发给后端应用，那么应该加上一个break标记。
+如果 rewrite 规则起补充作用,还需要其他规则配合完成， 那么不带第三个的 flag 参数。
+以上说的 rewrite 规则属于nginx的内部重定向规则，也就是说，用户外部看到的url依然是他输入的url ， 
+而转给后端应用的$uri,则已经是 nginx 改写之后的结果。
+
+1.如果需要进行显式地外部重定向， 需要借助 redirect , permanent 这两个 flag 进行 302 和 301 重定向.
+它的行为和 break 类似,区别在于nginx会中断流程,通过 http 请求告诉用户端进行重定向,
+也就是这次请求不需要进过后端服务， 由 nginx 全职负责。
+
+2.如果rewrite 后面的参数是以http开头，那么实际就是会redirect，给客户端返回临时重定向302，这时客户端会收到302后发起get请求
+所以之前的post请求的数据就不复存在了。上面这种情况应该使用反向代理proxy_pass.
+
+举个例子：
+需求：
+一个域名a.qq.com在进行post请求访问时，将根路径的请求转发到logpost路径，然后转发给业务的后端。
+正确的配置：
+location / {
+    rewrite /(.*) /logpost/$1 break;
+	proxy_pass http://10.2.2.1:10000
+}
+
+有问题的配置：
+location / {
+    rewrite /(.*) http://$host/logpost/$1;
+	proxy_pass http://10.2.2.1:10000
+}
+
+location / {
+    rewrite /(.*) /logpost/$1 permanent;
+	proxy_pass http://10.2.2.1:10000
+}
+
+location / {
+    rewrite /(.*) /logpost/$1 redirect;
+	proxy_pass http://10.2.2.1:10000
+}
+出问题的原因：见上面1和2。
