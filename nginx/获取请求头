@@ -1,0 +1,9 @@
+nginx获取请求头和设置响应头字段
+$http_name
+匹配任意请求头字段； 变量名中的后半部分“name”可以替换成任意请求头字段，
+如在配置文件中需要获取http请求头：“Accept-Language”，那么将“－”替换为下划线，
+大写字母替换为小写，形如：$http_accept_language即可。
+$sent_http_name
+可以设置任意http响应头字段； 变量名中的后半部分“name”可以替换成任意响应头字段，
+如需要设置响应头Content-length，那么将“－”替换为下划线，大写字母替换为小写，
+形如：$sent_http_content_length 4096即可。
