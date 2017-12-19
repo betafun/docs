@@ -1,0 +1,20 @@
+ngx_http_upstream_consistent_hash 模块是一个负载均衡器，使用一个内部一致性hash算法来选择合适的后端节点。
+该模块通过使用客户端信息(如：$ip, $uri, $args等变量)作为参数，使用一致性hash算法将客户端映射到后端节点。
+该模块可以根据配置参数采取不同的方式将请求均匀映射到后端机器，比如：
+consistent_hash $remote_addr：可以根据客户端ip映射
+consistent_hash $request_uri： 根据客户端请求的uri映射
+consistent_hash $args：根据客户端携带的参数进行映射
+指令
+
+语法：consistent_hash    variable_name
+默认值：none
+上下文：upstream
+配置upstream采用一致性hash作为负载均衡算法，并使用配置的变量名作为hash输入。
+
+配置例子：
+upstream somestream {
+  consistent_hash $request_uri;
+  server 10.50.1.3:11211;
+  server 10.50.1.4:11211;
+  server 10.50.1.5:11211;
+}
