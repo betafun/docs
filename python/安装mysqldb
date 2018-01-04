@@ -1,0 +1,2 @@
+跑的脚本有问题，没有mysqldb包
+申请root权限，执行yum install MySQL-python。解决问题。
