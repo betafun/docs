@@ -1,0 +1,66 @@
+nginx日志自动分割和删除靠谱的办法
+第一种：
+自己写个shell脚本，定期的分割和删除日志
+#!/bin/bash
+#date:20180116
+#日志文件的路径
+logs_path="/data/log/nginx/logs"
+access_name="access.log"
+error_name="error.log"
+
+pid_path="/data/log/nginx/logs/nginx.pid"
+#按天分割日志文件
+mv ${logs_path}/${access_name} ${logs_path}/"access-"$(date --date="LAST DAY" "+%Y-%m-%d").log
+mv ${logs_path}/${error_name} ${logs_path}/"error-"$(date --date="LAST DAY" "+%Y-%m-%d").log
+#重新加载配置，生成新的日志文件
+#kill -USR1 `cat ${pid_path}`
+./nginx_reload.sh
+#删除七天之前的日志文件
+find ${logs_path} -mtime +3 -name 'access-*' -exec rm -rf {} \;
+find ${logs_path} -mtime +3 -name 'error-*' -exec rm -rf {} \;
+
+然后设置定时作业就可以了：
+crontab 设置作业
+0 0 * * * bash /usr/local/nginx/nginx_log.sh
+问题：权限问题，日志文件的读写和nginx加载配置的权限，需要root
+
+第二种：
+使用Logrotate
+在/etc/logrotate.d/目录下创建一个配置文件”nginx”，内容如下：
+/data/log/nginx/logs/access.log {
+daily     #每天轮询
+rotate 5  #保留五次滚动的日志
+missingok #如果日志丢失，不报错继续滚动下一个日志
+dateext  #使用日期命名
+compress #压缩
+notifempty #当日志为空时不进行滚动
+sharedscripts
+postrotate
+    if [ -f /data/log/nginx/logs/nginx.pid ]; then
+        kill -USR1 `cat /data/log/nginx/logs/nginx.pid`
+    fi
+endscript
+}
+可以立即执行看一下效果：/usr/sbin/logrotate -f /etc/logrotate.d/nginx
+由于logratate已经加到cron.daily（/etc/cron.daily/logrotate），不再需要加到计划任务中
+也可以在/etc/crontab中设置cron.daily的运行时间。
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/
+
+# For details see man 4 crontabs
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name command to be executed
+# run-parts
+01 * * * * root run-parts /etc/cron.hourly
+59 23 * * * root run-parts /etc/cron.daily
+22 4 * * 0 root run-parts /etc/cron.weekly
+42 4 1 * * root run-parts /etc/cron.monthly
