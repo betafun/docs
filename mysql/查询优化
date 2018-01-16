@@ -1,0 +1,11 @@
+
+mysql数据库：
+使用explain命令查看命令的运行成本
+创建索引，可以通过explain查看确实的索引
+
+模糊查询like不会使用索引，除非开头是明确的，比如 like 'hah%'这种。
+提高模糊查询的效率，可以使用locate FIND_IN_SET POSITION等。
+
+查看语句的执行耗时：
+set profiling=1;
+show profiles;
