@@ -1,0 +1,7 @@
+浏览器访问utp.qq.com，可以获取到对应的localDNS等信息。
+服务器的话就跑个脚本：
+ for ((i=1; i<=100; i ++))  ; do dig $i.ip.dnspod.net +short; done|sort -u
+ 
+whoami.akamai.net
+
+akamai 提供了一個域名，直接ping 或者dig 就可以獲取local dns地址，這個很酷，直接把local dns 當作查詢結果返回。
