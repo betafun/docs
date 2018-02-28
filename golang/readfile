@@ -1,0 +1,12 @@
+go一行一行的遍历文件：
+fi, err := os.Open(filePath)
+fd, err := ioutil.ReadAll(fi) //读取fi文件，一直到结尾。
+fileContentText := string(fd) //把读取的内容转成字符串格式
+
+s := strings.NewReader(fileContentText)
+
+bs := bufio.NewScanner(s)
+for bs.Scan() {
+               line := bs.Text()
+			   ......
+			   }
