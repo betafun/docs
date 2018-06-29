@@ -1,0 +1,74 @@
+爬取数据
+难点就是使用goquery进行数据的分析，把需要的信息从网页中解析出来，并按格式存入到DB里面。
+不过goquery是个好东西，下面把goquery部分代码贴一下。
+doc.Find("tbody.value-body").Find("tr").Each(func(i int, s *goquery.Selection) {
+		haha = append(haha, s.Find("td.coin_name").Text())
+		s.Find("td>span").Each(func(i int, t *goquery.Selection) {
+			haha = append(haha, string(t.Text()))
+		})
+    //这里解析的还是不够优雅，没能区分带不带单位的数据，只能暴力的把没带单位的数据过滤掉了。我这里暴力一点倒是没啥问题，因为小数额的信息对我来说没有价值。
+		if len(haha) == 10 {
+			var TV float64
+			if haha[6] == "万" {
+				aa, _ := strconv.ParseFloat(strings.Replace(haha[5], ",", "", -1), 32)
+				TV = aa * 10000
+			} else {
+				bb, _ := strconv.ParseFloat(strings.Replace(haha[5], ",", "", -1), 32)
+				TV = bb * 100000000
+			}
+
+			_, err = db.Exec("INSERT INTO t_coin_detail (CN,GI,24G,24T,24V,QoC,DS)values(?,?,?,?,?,?,?)", haha[0], haha[3], haha[4], int(TV), haha[7]+haha[8], haha[9], timestamp)
+			if err != nil {
+				fmt.Println(err, haha[0])
+			}
+		}
+处理分析
+遇到一个头疼的问题是，目前DB中有每个时间段的币的价格，我需要对比最近两个时间点币交易额的波动情况。怎么搞?
+首先我需要先把最近两个时间点的记录薅出来，然后轮询这些记录，把币名作为map的key,其余的信息作为value。
+这样当这个key第二次出现的时候，我就知道这是这个币的第二条记录了，我就可以计算波动了。附上部分代码：
+//选出最近两个时间点的记录(最大最小值好找，第二大就不好找了)
+rows, _ := db.Query("select * from t_coin_detail where DS>=(select max(DS) from t_coin_detail where DS < (select max(DS) from t_coin_detail)) order by CN")
+record := make(map[string][]string)
+//遍历选出的记录
+for rows.Next() {
+		columns, _ := rows.Columns()
+
+		scanArgs := make([]interface{}, len(columns))
+		values := make([]interface{}, len(columns))
+
+		for i := range values {
+			scanArgs[i] = &values[i]
+		}
+
+		//将数据保存到 record 字典
+		err = rows.Scan(scanArgs...)
+		content := []string{}
+		for _, col := range values {
+			if col != nil {
+				content = append(content, string(col.([]byte)))
+			}
+
+		}
+    //判断是否已经有这个key,如果已经出现过一次，则把结果存入DB。
+		if _, ok := record[content[1]]; ok {
+			currdata, _ := strconv.ParseFloat(record[content[1]][2], 64)
+			predata, _ := strconv.ParseFloat(content[4], 64)
+			fluct := ((predata - currdata) / predata) * 100
+			//fmt.Println(content[1], currdata, predata, fluct)
+			GG, _ := strconv.Atoi(record[content[1]][2])
+			_, err = db.Exec("INSERT INTO t_coin_fluct (CN,GI,24G,24T,24F,24V,QoC,DS)values(?,?,?,?,?,?,?,?)", content[1], record[content[1]][0], record[content[1]][1], GG, fluct, record[content[1]][3], record[content[1]][4], record[content[1]][5])
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			record[content[1]] = content[2:]
+			//fmt.Println(record[content[1]])
+		}
+	}
+	rows.Close()
+}
+然后就是排序选出波动比较大的币的记录，这直接使用数据库的order by 就可以了。还是比较简单的。
+发送微信
+发送微信是使用的python的wxpy包来实现的。之所以没有golang来写，是因为golang的包还不成熟，不好用。
+这个微信发送也不是很牛逼，就是网页登录嘛。
+
