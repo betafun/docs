@@ -1,0 +1,3 @@
+proxy_hide_header field
+指明要隐藏的后端服务器响应报文的header，默认情况下，不会传递“Date”, “Server”, “X-Pad”, and “X-Accel-…”header的信息。
+此定义能够避免后端服务器信息被泄露。
