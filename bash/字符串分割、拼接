@@ -1,0 +1,23 @@
+字符串分割
+举个例子：
+原来的字符串为："15d16 > 9000002222 17d18 > 9000000022333 18d19 > 900003333322"
+想要的样子：9000002222,9000000022333,900003333322
+shell代码如下：
+
+#!/bin/bash
+test="15d16 > 9000002222 17d18 > 9000000022333 18d19 > 900003333322"
+OLD_IFS=$IFS
+IFS=','
+arr=$test
+IFS=$OLD_IFS
+
+for x in $arr; do
+  if [[ $x =~ "d" ]] || [[ $x =~ ">" ]]
+  then 
+    continue
+  else
+    sum=$sum$x","
+  fi
+done
+cust_no=`echo ${sum%*,}`
+echo $cust
