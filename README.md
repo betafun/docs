@@ -1,2 +1,2 @@
 # docs
-Tech docs
+记录平时一些有用的知识
