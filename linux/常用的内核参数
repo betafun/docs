@@ -1,0 +1,16 @@
+/proc/sys目录下存放着大多数的内核参数，并且设计成可以在系统运行的同时进行更改, 不过重新启动机器后会失效。
+可以通过更改/proc/sys中内核参数对应的文件 /etc/sysctl.conf 的内核参数来永久更改。
+
+修改 /etc/sysctl.conf文件之后，需要执行sysctl –p命令才能生效。
+/sbin/sysctl -a 查看所有可以修改的内核参数
+
+
+查看系统本地可用端口极限值
+
+cat /proc/sys/net/ipv4/ip_local_port_range
+
+查看系统允许当前用户进程打开的文件数限制
+ulimit -n
+cat /etc/security/limits.conf
+linux系统级别硬限制
+cat /proc/sys/fs/file-max
