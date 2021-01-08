@@ -1,0 +1,1 @@
+du -lh --max-depth=1 --exclude="*data*"
